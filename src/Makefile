@@ -13,7 +13,7 @@ clean:
 	rm -f *.o trydecode
 
 %.o: %.c
-	gcc -o $@ -c $< ${AUDIO_CFLAGS}
+	gcc -Wall -o $@ -c $< ${AUDIO_CFLAGS}
 
 %.o: %.cpp
-	g++ -o $@ -c $< ${AUDIO_CFLAGS}
+	g++ -Wall -o $@ -c $< ${AUDIO_CFLAGS}
