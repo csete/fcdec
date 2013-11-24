@@ -130,7 +130,7 @@ void CTryDecode::go(void) {
 }
 
 void CTryDecode::OnDecodeSuccess(U8* result, U32 length, U32 centreBin) {
-	for (int i=0; i<length; i+=16) {
+	for (int i=0; i<(int)length; i+=16) {
 		printf("%02x: ", i);
 		for (int j=0; j<16; j++) {
 			printf("%02x ", result[i+j]);

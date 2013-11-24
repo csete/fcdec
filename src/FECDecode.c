@@ -710,13 +710,13 @@ extern "C" {
 
                 if (Verbose) {
                     sprintf(sz, "RS byte corrections: ");
-                    printf(sz);
+                    printf("%s", sz);
                 }
                 for (row = 0; row < RSBLOCKS; row++) {
                     if (rserrs[row] != -1) {
                         if (Verbose) {
                             sprintf(sz, " %d  ", rserrs[row]);
-                            printf(sz);
+                            printf("%s", sz);
                         }
                     } else {
                         if (Verbose) {
