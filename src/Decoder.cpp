@@ -276,7 +276,7 @@ void CDecoder::RxPutNextUCSample(S16 s16UCSamp)
 						//char szOut[32];							
 						//sprintf(szOut,"Sum=%d, Phase=%f\r\n",nSum,fBitPhasePos);
 						//OutputDebugStringA(szOut);
-						printf("Sum=%d, Phase=%f\n",nSum,fBitPhasePos);
+						fprintf(stderr, "Sum=%d, Phase=%f\n",nSum,fBitPhasePos);
 					}
 					if (nSum>=45)
 					{
@@ -284,7 +284,7 @@ void CDecoder::RxPutNextUCSample(S16 s16UCSamp)
 						{
 							au8[i]=((as8FECBits[i]==1) ? 0xC0 : 0x40);
 						}
-						printf("Attempting FECDecode\n");
+						fprintf(stderr, "Attempting FECDecode\n");
 						if (FECDecode(au8,au8Decoded))
 						{
 							// Indicate data ready for collection
@@ -298,14 +298,14 @@ void CDecoder::RxPutNextUCSample(S16 s16UCSamp)
 							//CComSafeArray<byte> sa(0UL);
 							//sa.Add(256,au8Decoded);
 							//Fire_DataReceived(CComVariant(sa));
-							printf("FECDecode OK!\n");
+							fprintf(stderr, "FECDecode OK!\n");
 						}
 						else
 						{
 							// Error decoding, send an empty data packet.
 							//CComSafeArray<byte> sa(0UL);							
 							//Fire_DataReceived(CComVariant(sa));
-							printf("FECDecode FAIL\n");
+							fprintf(stderr, "FECDecode FAIL\n");
 						}
 					}
 				}

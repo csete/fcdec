@@ -706,22 +706,32 @@ extern "C" {
 
             /* Print RS-decode status summary */
             {
-                char sz[80];
+                //char sz[80];
 
-                if (Verbose) {
-                    sprintf(sz, "RS byte corrections: ");
-                    printf("%s", sz);
+                if (Verbose)
+                {
+                    fprintf(stderr, "RS byte corrections: ");
+                    //sprintf(sz, "RS byte corrections: ");
+                    //printf("%s", sz);
                 }
-                for (row = 0; row < RSBLOCKS; row++) {
-                    if (rserrs[row] != -1) {
-                        if (Verbose) {
-                            sprintf(sz, " %d  ", rserrs[row]);
-                            printf("%s", sz);
+                for (row = 0; row < RSBLOCKS; row++)
+                {
+                    if (rserrs[row] != -1)
+                    {
+                        if (Verbose)
+                        {
+                            fprintf(stderr, " %d  ", rserrs[row]);
+                            //sprintf(sz, " %d  ", rserrs[row]);
+                            //printf("%s", sz);
                         }
-                    } else {
-                        if (Verbose) {
-                            sprintf(sz, "FAIL ");
-                            puts(sz);
+                    }
+                    else
+                    {
+                        if (Verbose)
+                        {
+                            fprintf(stderr, "FAIL ");
+                            //sprintf(sz, "FAIL ");
+                            //puts(sz);
                         }
                         nRC = 0;
                     }
@@ -751,8 +761,8 @@ extern "C" {
             if (Verbose) {
                 //char sz[80];
                 //sprintf(sz,"Channel symbol errors: %d (%.3g%%)",errors,100.*errors/SYMPBLOCK);
-                printf(" Channel symbol errors: %d (%.3g%%)\n", errors,
-                       100. * errors / SYMPBLOCK);
+                fprintf(stderr, " Channel symbol errors: %d (%.3g%%)\n", errors,
+                        100. * errors / SYMPBLOCK);
                 //_AppendText(sz);
             }
 

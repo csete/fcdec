@@ -122,7 +122,7 @@ void CTryDecode::go(void) {
 		gettimeofday(&te, NULL);
 		int period=(te.tv_sec-ti.tv_sec)*1000000+(te.tv_usec-ti.tv_usec);
 		int us=PROCESSING_PERIOD_USEC-period;
-		printf("processing took: %d usecs, centreBin=%d\n", period, _centreBin);
+		fprintf(stderr, "processing took: %d usecs, centreBin=%d\n", period, _centreBin);
 		if (_dosleep)
 			usleep(us);
 	} while (n>0);
@@ -130,12 +130,21 @@ void CTryDecode::go(void) {
 }
 
 void CTryDecode::OnDecodeSuccess(U8* result, U32 length, U32 centreBin) {
-	for (int i=0; i<(int)length; i+=16) {
-		printf("%02x: ", i);
-		for (int j=0; j<16; j++) {
-			printf("%02x ", result[i+j]);
+    // Print raw frame to stdout
+    if (fwrite(result, 1, length, stdout) != length)
+        fprintf(stderr, "Error writing frame to stdout\n");
+    else
+        fflush(stdout);
+
+    // Print formatted frame to stderr
+	for (int i = 0; i < (int)length; i += 16)
+    {
+		fprintf(stderr, "%02x: ", i);
+		for (int j = 0; j < 16; j++)
+        {
+			fprintf(stderr, "%02x ", result[i+j]);
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
 }
 
