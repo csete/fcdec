@@ -3,8 +3,8 @@
 # Released under the terms of the Creative Commons BY-SA-NC
 # https://creativecommons.org/licenses/by-nc-sa/3.0/
 
-AUDIO_CFLAGS=$(shell pkg-config --cflags portaudio-2.0 sndfile fftw3f)
-AUDIO_LIBS=$(shell pkg-config --libs portaudio-2.0 sndfile fftw3f)
+AUDIO_CFLAGS=$(shell pkg-config --cflags sndfile fftw3f)
+AUDIO_LIBS=$(shell pkg-config --libs sndfile fftw3f)
 
 trydecode: trydecode.o Decoder.o FECDecode.o
 	g++ -o $@ trydecode.o Decoder.o FECDecode.o $(AUDIO_LIBS)
