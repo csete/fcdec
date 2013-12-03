@@ -119,7 +119,6 @@ using namespace ATL;
 #else
 #include <fftw3.h>
 #endif
-#include "portaudio.h"
 
 const size_t COMPLEX_SAMPLE_BUFFER_BYTES =  sizeof(fftwf_complex) * FORWARD_FFT_SIZE;
 const size_t REAL_SAMPLE_BUFFER_BYTES =  sizeof(SAMPLE) * INVERSE_FFT_RESULT_SIZE;
