@@ -1,0 +1,2 @@
+arecord -D hw:2 -t raw -r 96k -c 2 -f S16_LE tlm.raw
+
