@@ -129,21 +129,23 @@ void CTryDecode::go(void) {
 
 void CTryDecode::OnDecodeSuccess(U8* result, U32 length, U32 centreBin) {
     // Print raw frame to stdout
-    if (fwrite(result, 1, length, stdout) != length)
-        fprintf(stderr, "Error writing frame to stdout\n");
-    else
-        fflush(stdout);
+    //if (fwrite(result, 1, length, stdout) != length)
+    //    fprintf(stderr, "Error writing frame to stdout\n");
+    //else
+    //    fflush(stdout);
 
     // Print formatted frame to stderr
 	for (int i = 0; i < (int)length; i += 16)
     {
-		fprintf(stderr, "%02x: ", i);
+		fprintf(stderr, "%02X: ", i);
 		for (int j = 0; j < 16; j++)
         {
-			fprintf(stderr, "%02x ", result[i+j]);
+            fprintf(stdout, "%02X ", result[i+j]);
+			fprintf(stderr, "%02X ", result[i+j]);
 		}
 		fprintf(stderr, "\n");
 	}
+    fprintf(stdout, "\n");
 }
 
 int main(int argc, char **argv) {
