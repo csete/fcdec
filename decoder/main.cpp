@@ -1,4 +1,4 @@
-// FUNcube decoder test program
+// FUNcube telemetry decoder program
 // Copyright (c) Phil Ashby, 2013
 // Copyright (c) Alexandru Csete, 2013
 // Released under the terms of the Creative Commons BY-SA-NC

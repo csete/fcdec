@@ -15,7 +15,7 @@ LOGFILE="$PROG_DIR/usrp_offline_sequencer.log"
 # commands
 CMD_CONVERT="$PROG_DIR/usrp_shift_and_resample.py"
 CMD_FILTER="$PROG_DIR/filter"
-CMD_DECODE="$PROG_DIR/trydecode"
+CMD_DECODE="$PROG_DIR/decode"
 CMD_SUBMIT="$PROG_DIR/submit.sh"
 
 

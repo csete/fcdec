@@ -17,7 +17,7 @@ LOGFILE="$WORK_DIR/fcd_sequencer.log"
 CMD_CONVERT="$PROG_DIR/shift_and_resample.py"
 CMD_FCDCTL="$PROG_DIR/fcdctl"
 CMD_FILTER="$PROG_DIR/filter"
-CMD_DECODE="$PROG_DIR/trydecode"
+CMD_DECODE="$PROG_DIR/decode"
 CMD_SUBMIT="$PROG_DIR/submit.sh"
 
 # command port
