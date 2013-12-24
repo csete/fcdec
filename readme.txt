@@ -16,7 +16,8 @@ The directory has the following layout:
 decoder: The decoder from [1], modified to use stdin, stdout and stderr
          instead of .wav files.
 
-fcdctl:  Submodule linking to a simple Funcube Dongle Pro/Pro+ controller.
+fcdctl:  External command line application providing a simple control
+         interface to the Funcube Dongle Pro and Pro+.
 
 filter:  A simple bandpass filter working on IQ samples that we use in front
          of the current decoder. The filter also uses stdin, stdout and stderr
