@@ -1,0 +1,11 @@
+The files:
+
+fcd_capture.txt
+fcd_replay.grc
+fcd_sequencer.sh
+submit.sh
+usrp_offline_sequencer.sh
+usrp_shift_and_resample.py
+
+are all simple scripts and can be considered to be in the public domain.
+
