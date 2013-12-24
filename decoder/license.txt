@@ -1,0 +1,11 @@
+FUNcube telemetry decoder program
+Copyright (c) 1997, 2002 Phil Karn
+Copyright (c) 2003 James Miller
+Copyright (c) 2013 Phil Ashby
+Copyright (c) 2013 Howard Long
+Copyright (c) 2013 Duncan Hills
+Copyright (c) 2013 Alexandru Csete
+
+Released under the terms of the Creative Commons BY-SA-NC
+https://creativecommons.org/licenses/by-nc-sa/3.0/ 
+
