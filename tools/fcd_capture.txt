@@ -1,2 +1,25 @@
-arecord -D hw:2 -t raw -r 96k -c 2 -f S16_LE tlm.raw
+I found sox to be the best and most reliable application to capture samples
+from the FCD. See "man sox" for documentation.
+
+For example:
+
+ sox -q -r 96k -e signed-integer -b 16 --endian little -c 2 -t alsa hw:2 somefile.raw trim 0 800
+
+Will capture raw 2 channel S16LE audio for 800 seconds from the second sound card.
+Remove the -q to get status info during recording.
+
+On systems with pulseaudio you might not able to use hw:x or pughw:x reliably.
+In this case I have had success with using the pulseaudio backend in sox.
+First, find the input device name:
+
+ pactl list | grep -A2 'Source #' | grep 'Name: ' | cut -d" " -f2
+
+and the sox command for capturing becomes somthing like:
+
+ sox -q -r 96k -e signed-integer -b 16 --endian little -c 2 -t pulse alsa_input.usb-Hanlincrest_Ltd._FUNcube_Dongle_V1.0-00-V10.analog-stereo file.raw
+
+
+As an alternative one could try parec:
+
+  parec --device=alsa_input.usb-Hanlincrest_Ltd._FUNcube_Dongle_V1.0-00-V10.analog-stereo --format=s16le --rate=44100 --channels=2 ...
 
