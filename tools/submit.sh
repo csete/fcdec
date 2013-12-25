@@ -25,6 +25,8 @@ do
     RESULT=`curl --user-agent "fcdec for linux" -d "data=$POSTDATA" $URL`
     echo "Result: $RESULT"
 
+    # Please don't reduce this delay. 5 seconds corresponds to
+    # the rate used by the Dashboard software
     sleep 5
 done < <(cat "$@")
 
