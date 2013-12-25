@@ -49,8 +49,9 @@ sequencer.
 fcd_replay.grc
 
 GNU Radio Companion flow graph that can be used to replay a S16LE recoding
-and watch the spectrum ion real time. Can be used for debugging until we
-get a better spectrum viewer.
+and watch the spectrum in real time. Optionally, the spectrum can be
+shifted and stored to a new file. Useful for debugging until we get a
+better spectrum viewer.
 
 
 usrp_offline_sequencer.sh
