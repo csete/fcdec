@@ -82,14 +82,14 @@ do
     # perform filtering with gain 100 then decode
     NOW="$(date --utc +%Y%m%d_%H%M%S)"
     echo -n "$NOW: Filter and decode (G=100) $OUTPUT_DIR/$IQ_FILE:"  >> $LOGFILE
-    cat "$OUTPUT_DIR/$IQ_FILE" | $CMD_FILTER -g 100 2> $OUTPUT_DIR/filter100.log | $CMD_DECODE 1> $OUTPUT_DIR/data-100.txt 2>$OUTPUT_DIR/demod-100.log
+    cat "$OUTPUT_DIR/$IQ_FILE" | $CMD_FILTER -i -g 100 2> $OUTPUT_DIR/filter100.log | $CMD_DECODE -i 1> $OUTPUT_DIR/data-100.txt 2>$OUTPUT_DIR/demod-100.log
     PKT100="$(cat $OUTPUT_DIR/data-100.txt | wc -l)"
     echo "$PKT100" >> $LOGFILE
  
     # perform filtering with gain 200 then decode
     NOW="$(date --utc +%Y%m%d_%H%M%S)"
     echo -n "$NOW: Filter and decode (G=200) $OUTPUT_DIR/$IQ_FILE:"  >> $LOGFILE
-    cat "$OUTPUT_DIR/$IQ_FILE" | $CMD_FILTER -g 200 2> $OUTPUT_DIR/filter200.log | $CMD_DECODE 1> $OUTPUT_DIR/data-200.txt 2>$OUTPUT_DIR/demod-200.log
+    cat "$OUTPUT_DIR/$IQ_FILE" | $CMD_FILTER -i -g 200 2> $OUTPUT_DIR/filter200.log | $CMD_DECODE -i 1> $OUTPUT_DIR/data-200.txt 2>$OUTPUT_DIR/demod-200.log
     PKT200="$(cat $OUTPUT_DIR/data-200.txt | wc -l)"
     echo "$PKT200" >> $LOGFILE
  
