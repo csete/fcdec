@@ -3,11 +3,13 @@
 // Copyright (c) Alexandru Csete, 2013
 // Released under the terms of the Creative Commons BY-SA-NC
 // https://creativecommons.org/licenses/by-nc-sa/3.0/
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <math.h>
+#include <getopt.h>
+
 #include "stdafx.h"
 #include "Decoder.h"
 
@@ -34,6 +36,8 @@ private:
 	int _centreBin;
 	int _dosleep;
 	int _doupper;
+
+    bool _useInt;   // Use S16LE integer input instead of float.
 };
 
 CTryDecode::CTryDecode(int argc, char **argv) {
@@ -44,12 +48,40 @@ CTryDecode::CTryDecode(int argc, char **argv) {
 	_averageCentreBin = 0.0F;
 	_dosleep = 0;
 	_doupper = 0;
-	for (int a=1; a<argc; a++) {
-		if (argv[a][0]=='s')
-			_dosleep = 1;
-		else if (argv[a][0]=='u')
-			_doupper=1;
-	}
+    _useInt = false;
+
+//    for (int a=1; a<argc; a++) {
+//		if (argv[a][0]=='s')
+//			_dosleep = 1;
+//		else if (argv[a][0]=='u')
+//			_doupper=1;
+//	}
+
+    int option;
+
+    if (argc > 1)
+    {
+        while ((option = getopt(argc, argv, "ius")) != -1)
+        {
+            switch (option)
+            {
+                case 'i':
+                    _useInt = true;
+                    break;
+
+                case 's':
+                    _dosleep = 1;
+                    break;
+
+                case 'u':
+                    _doupper = 1;
+                    break;
+
+                default:
+                    exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 CTryDecode::~CTryDecode(void) {
@@ -59,33 +91,45 @@ CTryDecode::~CTryDecode(void) {
 }
 
 void CTryDecode::go(void) {
-	// Grab audio samples from stdin in S16_LE format apply forward FFT,
+	// Grab audio samples from stdin and apply forward FFT,
     // deduce centre frequency then feed to decoder at sane rate.
     size_t n;
 
 	do {
 
-		short  buf[2*FORWARD_FFT_SIZE];
+		short  buf_i[2*FORWARD_FFT_SIZE];
 		struct timeval ti;
 		struct timeval te;
 		float  maxBin=0.0;
 		int    binPos = -1;
 
         gettimeofday(&ti, NULL);
-		n = fread(buf, sizeof(short), 2*FORWARD_FFT_SIZE, stdin);
 
-        if (n < 2*FORWARD_FFT_SIZE)
-			continue;
-
-        for (int i = 0; i < FORWARD_FFT_SIZE; i++)
+        if (_useInt)
         {
-			_fftIn[i][0] = (float)(buf[2*i]/*+44*/)/32768.0;
-			_fftIn[i][1] = (float)(buf[2*i+1]/*-4*/)/32768.0;
-		}
-		fftwf_execute(_fftPlan);
+            // read input in short-complex (S16LE) format
+            n = fread(buf_i, sizeof(short), 2*FORWARD_FFT_SIZE, stdin);
+
+            if (n < 2*FORWARD_FFT_SIZE)
+                continue;
+
+            for (int i = 0; i < FORWARD_FFT_SIZE; i++)
+            {
+                _fftIn[i][0] = (float)(buf_i[2*i]) / 32768.0;
+                _fftIn[i][1] = (float)(buf_i[2*i+1]) / 32768.0;
+            }
+        }
+        else
+        {
+            // read input in float-complex format
+            n = fread(_fftIn, sizeof(float), 2*FORWARD_FFT_SIZE, stdin);
+        }
+
+        fftwf_execute(_fftPlan);
 		_avePsd[0]=0;
 
-        // NB: FORWARD_FFT_RESULT_SIZE = FORWARD_FFT_SIZE/2 since we ignore negative frequencies in results
+        // NB: FORWARD_FFT_RESULT_SIZE = FORWARD_FFT_SIZE/2 since we ignore negative
+        //     frequencies in results
 		for (int i = 0; i < FORWARD_FFT_RESULT_SIZE; i++)
 		{
 			_psd[i] = sqrt(_fftOut[i][0]*_fftOut[i][0]+_fftOut[i][1]*_fftOut[i][1]);
@@ -107,10 +151,13 @@ void CTryDecode::go(void) {
 			}
 		}
 		_centreBin = max(0, min(FORWARD_FFT_RESULT_SIZE-1, _centreBin));
-		_averagePeekPower = (PSD_AVERAGE_FACTOR * _avePsd[_centreBin]) + (PSD_INV_AVERAGE_FACTOR * _averagePeekPower);
-		if (maxBin > (_averagePeekPower/4)*5 && 0 < binPos)
+		_averagePeekPower = (PSD_AVERAGE_FACTOR * _avePsd[_centreBin]) +
+            (PSD_INV_AVERAGE_FACTOR * _averagePeekPower);
+
+        if (maxBin > (_averagePeekPower/4)*5 && 0 < binPos)
 		{
-			_averageCentreBin = (CFREQ_AVERAGE_FACTOR * (float)binPos) + (CFREQ_INV_AVERAGE_FACTOR * _averageCentreBin);
+			_averageCentreBin = (CFREQ_AVERAGE_FACTOR * (float)binPos) +
+                (CFREQ_INV_AVERAGE_FACTOR * _averageCentreBin);
 			_centreBin = (int) _averageCentreBin + 1.0F;
 		}
 

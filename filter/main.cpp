@@ -1,6 +1,7 @@
 //
 // filter: Simple bandpass filter for Funcube telemetry receiver.
-//         Complex input and output in S16LE format.
+//         Complex input in S16LE format.
+//         Complex output in float (default) or S16LE format
 //
 // This Software is released under the "Simplified BSD License"
 // Copyright 2013 Alexandru Csete. All rights reserved.
@@ -47,16 +48,17 @@ static void help(void)
         "\n Usage: filter [options]\n"
         "\n Possible options are:\n"
         "  -s\tSet sample rate (default is 96 ksps).\n"
-        "  -o\tSet filter offset from center in Hz, or use k, M, G suffix (default is 10k).\n"
+        "  -o\tSet filter offset in Hz, or use k, M, G suffix (default is 10k).\n"
         "  -w\tSet filter width in Hz, or use k, M, G suffix (default is 16k).\n"
-        "  -g\tGain (multiplication factor before filtering.\n"
+        "  -i\tUse integer S16LE output format (default is to use float).\n"
+        "  -g\tGain (multiplication factor before filtering).\n"
         "  -h\tThis help message\n"
         "\nThe default parameters are set to work when the Funcube Dongle is tuned to"
-        "\n145.915 MHz. The nominal beacon frequency is 145.935 MHz (145.938 MHz at AOS"
+        "\n145.925 MHz. The nominal beacon frequency is 145.935 MHz (145.938 MHz at AOS"
         "\nand 145.932 MHz at LOS).\n"
         "\nRaw input samples are read from stdin. Filtered output is sent to stdout."
-        "\nBoth input and output is in S16LE format and the interleaving order is."
-        "\nfirst I then Q.\n"
+        "\nInput is S16LE format while output can be float or S16LE. The interleaving"
+        "\norder is first I then Q.\n"
         "\nDebug and error messages are printed on stderr.\n";
 
     printf("%s", help_string);
@@ -102,12 +104,13 @@ int main(int argc, char **argv)
     TYPEREAL filter_offset = 10.e3;
     TYPEREAL filter_width  = 16.e3;
     TYPEREAL gain = 1.0;
+    bool use_integer_out = false;
 
     int option;
 
     if (argc > 1)
     {
-        while ((option = getopt(argc, argv, "s:o:w:g:h")) != -1)
+        while ((option = getopt(argc, argv, "s:o:w:g:hi")) != -1)
         {
             switch (option)
             {
@@ -142,6 +145,10 @@ int main(int argc, char **argv)
                     gain = (TYPEREAL)atof(optarg);
                     break;
 
+                case 'i':
+                    use_integer_out = true;
+                    break;
+
                 case 'h':
                     help();
                     exit(EXIT_SUCCESS);
@@ -167,12 +174,12 @@ int main(int argc, char **argv)
 
 #define NUM_SAMP    8192
 #define BUFFER_SIZE 2 * NUM_SAMP
-    short input_buffer[BUFFER_SIZE];
-    short output_buffer[BUFFER_SIZE];
-    TYPECPX pre_filter[NUM_SAMP];
-    TYPECPX post_filter[NUM_SAMP];
-
+    short    input_buffer[BUFFER_SIZE];
+    TYPECPX  pre_filter[NUM_SAMP];
+    TYPECPX  post_filter[NUM_SAMP];
+    short    output_buffer_i[BUFFER_SIZE];
     size_t read, written, i;
+
 
     while (true)
     {
@@ -193,21 +200,28 @@ int main(int argc, char **argv)
         // convert input buffer to float complex
         for (i = 0; i < read / 2; i++)
         {
-            pre_filter[i].re = gain*(TYPEREAL)input_buffer[2*i];
-            pre_filter[i].im = gain*(TYPEREAL)input_buffer[2*i+1];
+            pre_filter[i].re = gain * (TYPEREAL)input_buffer[2*i] / 32767.0f;
+            pre_filter[i].im = gain * (TYPEREAL)input_buffer[2*i+1] / 32767.0f;
         }
 
         // process data
         filter.ProcessData(read/2, pre_filter, post_filter);
 
-        // convert output buffer to shorts and write to stdout
-        for (i = 0; i < read / 2; i++)
+        if (use_integer_out)
         {
-            output_buffer[2*i]   = (short)post_filter[i].re;
-            output_buffer[2*i+1] = (short)post_filter[i].im;
+            // convert output buffer to shorts and write to stdout
+            for (i = 0; i < read/2; i++)
+            {
+                output_buffer_i[2*i]   = (short)(32767.0*post_filter[i].re);
+                output_buffer_i[2*i+1] = (short)(32767.0*post_filter[i].im);
+            }
+            written = fwrite(output_buffer_i, sizeof(short), read, stdout);
+        }
+        else
+        {
+            written = fwrite(post_filter, sizeof(TYPEREAL), read, stdout);
         }
 
-        written = fwrite(output_buffer, sizeof(short), read, stdout);
         if (written != read)
             fprintf(stderr, "Wrote %ld samples (tried to write %ld)\n",
                     written, read);
