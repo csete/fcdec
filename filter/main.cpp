@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 
     CAgc agc;
     agc.SetParameters((agc_decay!=0), false, -50.0, manual_gain,
-            5, agc_decay != 0 ? agc_decay : 100, sample_rate);
+            0, agc_decay != 0 ? agc_decay : 100, sample_rate);
 
     fprintf(stderr, "Starting filter. Press ctrl-c to exit...\n");
 
