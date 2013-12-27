@@ -1,5 +1,5 @@
 //
-// filter: Simple bandpass filter for Funcube telemetry receiver.
+// filter: Simple bandpass filter with AGC for Funcube telemetry receiver.
 //         Complex input in S16LE format.
 //         Complex output in float (default) or S16LE format
 //
@@ -40,7 +40,7 @@
 
 #include "datatypes.h"
 #include "fastfir.h"
-
+#include "agc.h"
 
 static void help(void)
 {
@@ -51,7 +51,8 @@ static void help(void)
         "  -o\tSet filter offset in Hz, or use k, M, G suffix (default is 10k).\n"
         "  -w\tSet filter width in Hz, or use k, M, G suffix (default is 16k).\n"
         "  -i\tUse integer S16LE output format (default is to use float).\n"
-        "  -g\tGain (multiplication factor before filtering).\n"
+        "  -d\tSet AGC decay in msec (default is 100 and 0 disables AGC).\n"
+        "  -g\tSet manual gain in dB (used when AGC is off).\n"
         "  -h\tThis help message\n"
         "\nThe default parameters are set to work when the Funcube Dongle is tuned to"
         "\n145.925 MHz. The nominal beacon frequency is 145.935 MHz (145.938 MHz at AOS"
@@ -103,14 +104,16 @@ int main(int argc, char **argv)
     TYPEREAL sample_rate = 96.e3;
     TYPEREAL filter_offset = 10.e3;
     TYPEREAL filter_width  = 16.e3;
-    TYPEREAL gain = 1.0;
+    TYPEREAL manual_gain = 0.0;      // Manual gain in dB when AGC is off
+    int      agc_decay = 100;        // AGC decay rate in ms  
+
     bool use_integer_out = false;
 
     int option;
 
     if (argc > 1)
     {
-        while ((option = getopt(argc, argv, "s:o:w:g:hi")) != -1)
+        while ((option = getopt(argc, argv, "s:o:w:d:g:hi")) != -1)
         {
             switch (option)
             {
@@ -141,8 +144,18 @@ int main(int argc, char **argv)
                     }
                     break;
 
+                case 'd':
+                    agc_decay = atoi(optarg);
+                    // valid range 20 to 5000 and 0 to disable AGC
+                    if ((agc_decay > 5000) || ((agc_decay < 20) && (agc_decay != 0)))
+                    {
+                        fprintf(stderr, "Invalid AGC decay: %s\n", optarg);
+                        exit(EXIT_FAILURE);
+                    }
+                    break;
+
                 case 'g':
-                    gain = (TYPEREAL)atof(optarg);
+                    manual_gain = (TYPEREAL)atof(optarg);
                     break;
 
                 case 'i':
@@ -165,11 +178,17 @@ int main(int argc, char **argv)
     fprintf(stderr, "Sample rate: %.0f Hz\n", sample_rate);
     fprintf(stderr, "Filter offset / width: %.0f Hz / %.0f Hz\n",
             filter_offset, filter_width);
+    fprintf(stderr, "AGC decay: %d ms\n", agc_decay);
+    fprintf(stderr, "Manual gain: %.1f dB\n", manual_gain);
 
     CFastFIR filter;
     filter.SetupParameters(-filter_width / 2.0, filter_width / 2.0,
                            filter_offset, sample_rate);
-    
+
+    CAgc agc;
+    agc.SetParameters((agc_decay!=0), false, -50.0, manual_gain,
+            5, agc_decay != 0 ? agc_decay : 100, sample_rate);
+
     fprintf(stderr, "Starting filter. Press ctrl-c to exit...\n");
 
 #define NUM_SAMP    8192
@@ -177,8 +196,9 @@ int main(int argc, char **argv)
     short    input_buffer[BUFFER_SIZE];
     TYPECPX  pre_filter[NUM_SAMP];
     TYPECPX  post_filter[NUM_SAMP];
+    TYPECPX  post_agc[NUM_SAMP];
     short    output_buffer_i[BUFFER_SIZE];
-    size_t read, written, i;
+    size_t   read, written, i;
 
 
     while (true)
@@ -187,9 +207,6 @@ int main(int argc, char **argv)
         if (read <= 0)
         {
             return 0;
-            // wait 100 ms before trying to read again
-            //usleep(100000);
-            //continue;
         }
         else if (read != BUFFER_SIZE)
         {
@@ -200,26 +217,33 @@ int main(int argc, char **argv)
         // convert input buffer to float complex
         for (i = 0; i < read / 2; i++)
         {
-            pre_filter[i].re = gain * (TYPEREAL)input_buffer[2*i] / 32767.0f;
-            pre_filter[i].im = gain * (TYPEREAL)input_buffer[2*i+1] / 32767.0f;
+            pre_filter[i].re = (TYPEREAL)input_buffer[2*i];
+            pre_filter[i].im = (TYPEREAL)input_buffer[2*i+1];
         }
 
         // process data
         filter.ProcessData(read/2, pre_filter, post_filter);
+        agc.ProcessData(read/2, post_filter, post_agc);
 
         if (use_integer_out)
         {
             // convert output buffer to shorts and write to stdout
             for (i = 0; i < read/2; i++)
             {
-                output_buffer_i[2*i]   = (short)(32767.0*post_filter[i].re);
-                output_buffer_i[2*i+1] = (short)(32767.0*post_filter[i].im);
+                output_buffer_i[2*i]   = (short) post_agc[i].re;
+                output_buffer_i[2*i+1] = (short) post_agc[i].im;
             }
             written = fwrite(output_buffer_i, sizeof(short), read, stdout);
         }
         else
         {
-            written = fwrite(post_filter, sizeof(TYPEREAL), read, stdout);
+            // Scale output to -1.0 ... 1.0
+            for (i = 0; i < read/2; i++)
+            {
+                post_agc[i].re /= 32767.0;
+                post_agc[i].im /= 32767.0;
+            }
+            written = fwrite(post_agc, sizeof(TYPEREAL), read, stdout);
         }
 
         if (written != read)

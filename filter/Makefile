@@ -2,8 +2,8 @@
 BUILD_CFLAGS=-O2
 BUILD_LIBS=-lm
 
-filter: main.o fastfir.o fft.o
-	g++ -o $@ main.o fastfir.o fft.o $(BUILD_LIBS)
+filter: main.o fastfir.o fft.o agc.o
+	g++ -o $@ main.o fastfir.o fft.o agc.o $(BUILD_LIBS)
 
 clean:
 	rm -f *.o filter
