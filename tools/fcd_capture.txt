@@ -16,7 +16,7 @@ First, find the input device name:
 
 and the sox command for capturing becomes somthing like:
 
- sox -q -r 96k -e signed-integer -b 16 --endian little -c 2 -t pulse alsa_input.usb-Hanlincrest_Ltd._FUNcube_Dongle_V1.0-00-V10.analog-stereo file.raw
+ sox -q -r 96k -e signed-integer -b 16 --endian little -c 2 -t pulseaudio alsa_input.usb-Hanlincrest_Ltd._FUNcube_Dongle_V1.0-00-V10.analog-stereo file.raw
 
 
 As an alternative one could try parec:
