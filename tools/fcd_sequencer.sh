@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WORK_DIR="~/funcube-data"
-PROG_DIR="~/funcube/bin"
+WORK_DIR="$HOME/funcube-data"
+PROG_DIR="$HOME/bin"
 INPUT_DIR="$WORK_DIR/in"
 RECYCLE_DIR="$WORK_DIR/recycle"
 #OUTPUT_DIR containing time stamp is created and set later
@@ -55,6 +55,7 @@ do
     tmp=${arr[1]}
 
     # check if tmp is an integer
+    re='^[0-9]+$'
     if  [[ $tmp =~ $re ]] ; then
         DURATION=$tmp
     fi
