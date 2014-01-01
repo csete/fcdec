@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WORK_DIR="/home/oz9aec/funcube-data/"
-PROG_DIR="/home/oz9aec/funcube/bin"
+WORK_DIR="$HOME/funcube-data"
+PROG_DIR="$HOME/bin"
 INPUT_DIR="$WORK_DIR/in"
 RECYCLE_DIR="$WORK_DIR/recycle"
 #OUTPUT_DIR containing time stamp is created and set later
@@ -14,7 +14,6 @@ LOOP_DELAY=1
 LOGFILE="$WORK_DIR/fcd_sequencer.log"
 
 # commands
-CMD_CONVERT="$PROG_DIR/shift_and_resample.py"
 CMD_FCDCTL="$PROG_DIR/fcdctl"
 CMD_FILTER="$PROG_DIR/filter"
 CMD_DECODE="$PROG_DIR/decode"
@@ -56,7 +55,8 @@ do
     tmp=${arr[1]}
 
     # check if tmp is an integer
-    if [ "$tmp" -eq "$tmp" ] 2>/dev/null; then
+    re='^[0-9]+$'
+    if  [[ $tmp =~ $re ]] ; then
         DURATION=$tmp
     fi
     echo "$NOW: Will capture IQ for $DURATION seconds" >> $LOGFILE
