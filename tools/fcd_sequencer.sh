@@ -1,8 +1,7 @@
 #!/bin/bash
 
-WORK_DIR="/home/oz9aec/funcube-data/"
-PROG_DIR="/home/oz9aec/funcube/bin"
-INPUT_DIR="$WORK_DIR/in"
+WORK_DIR="$HOME/funcube/data/"
+PROG_DIR="$HOME/funcube/bin"
 RECYCLE_DIR="$WORK_DIR/recycle"
 #OUTPUT_DIR containing time stamp is created and set later
 
@@ -14,7 +13,6 @@ LOOP_DELAY=1
 LOGFILE="$WORK_DIR/fcd_sequencer.log"
 
 # commands
-CMD_CONVERT="$PROG_DIR/shift_and_resample.py"
 CMD_FCDCTL="$PROG_DIR/fcdctl"
 CMD_FILTER="$PROG_DIR/filter"
 CMD_DECODE="$PROG_DIR/decode"
