@@ -1,0 +1,15 @@
+
+BUILD_CFLAGS=-O2 -march=armv7 -mfpu=neon -mfloat-abi=hard -fno-exceptions
+BUILD_LIBS=-lm
+
+filter: main.o fastfir.o fft.o agc.o
+	g++ -o $@ main.o fastfir.o fft.o agc.o $(BUILD_LIBS)
+
+clean:
+	rm -f *.o filter
+
+%.o: %.c
+	gcc -Wall -o $@ -c $< ${BUILD_CFLAGS}
+
+%.o: %.cpp
+	g++ -Wall -o $@ -c $< ${BUILD_CFLAGS}

@@ -1,0 +1,22 @@
+# FUNcube telemetry decoder program
+# Copyright (c) Phil Ashby, Duncan Hills, Howard Long, 2013
+# Copyright (c) Alexandru Csete, 2013
+# Released under the terms of the Creative Commons BY-SA-NC
+# https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+CUBIE_FLAGS=-O2 -march=armv7 -mfpu=neon -mfloat-abi=hard -fno-exceptions
+BUILD_CFLAGS=$(shell pkg-config --cflags fftw3f)
+BUILD_LIBS=$(shell pkg-config --libs fftw3f)
+
+decode: main.o Decoder.o FECDecode.o
+	g++ -o $@ main.o Decoder.o FECDecode.o $(BUILD_LIBS)
+
+clean:
+	rm -f *.o decode
+
+%.o: %.c
+	gcc -Wall -o $@ -c $< ${BUILD_CFLAGS} ${CUBIE_FLAGS}
+
+%.o: %.cpp
+	g++ -Wall -o $@ -c $< ${BUILD_CFLAGS} ${CUBIE_FLAGS}
+
