@@ -8,6 +8,7 @@ RECYCLE_DIR="$WORK_DIR/recycle"
 FILE_PREFIX="fcd_iq_sc_"
 FILE_SUFFIX="_96_145924"
 AUDIO_DEV=alsa_input.usb-Hanlincrest_Ltd._FUNcube_Dongle_V1.0-00-V10.analog-stereo
+#AUDIO_DEV=hw:1
 
 LOOP_DELAY=1
 LOGFILE="$WORK_DIR/fcd_sequencer.log"
@@ -66,7 +67,7 @@ do
     NOW="$(date --utc +%Y%m%d_%H%M%S)"
 
     TIME_STRING=$NOW
-    OUTPUT_DIR="$WORK_DIR/out/$TIME_STRING"
+    OUTPUT_DIR="$WORK_DIR/$TIME_STRING"
     mkdir -p $OUTPUT_DIR
 
     IQ_FILE="$FILE_PREFIX$TIME_STRING$FILE_SUFFIX.raw"
@@ -91,18 +92,15 @@ do
     PKT200="$(cat $OUTPUT_DIR/data-200.txt | wc -l)"
     echo "$PKT200" >> $LOGFILE
  
-    # check which decode got more packets
+    # Use "sort -u" to find the union of the two decode sequences and submit packet
     NOW="$(date --utc +%Y%m%d_%H%M%S)"
     echo "$NOW: G=100 gave $PKT100 packets; G=200 gave $PKT200 packets" >> $LOGFILE
+    sort -u $OUTPUT_DIR/data-100.txt $OUTPUT_DIR/data-200.txt  1> $OUTPUT_DIR/data-sorted.txt 2>$OUTPUT_DIR/sort.log
+    PKTSORT="$(cat $OUTPUT_DIR/data-sorted.txt | wc -l)"
+    echo "$NOW:   *** Unique packets: $PKTSORT" >> $LOGFILE
 
-    if [ "$PKT100" -gt "$PKT200" ]; then
-        echo "$NOW:  Submitting packets from $OUTPUT_DIR/data-100.txt" >> $LOGFILE
-        $CMD_SUBMIT $OUTPUT_DIR/data-100.txt > $OUTPUT_DIR/submit.log  2>&1
-    else
-	echo "$NOW:  Submitting packets from $OUTPUT_DIR/data-200.txt" >> $LOGFILE
-        $CMD_SUBMIT $OUTPUT_DIR/data-200.txt > $OUTPUT_DIR/submit.log  2>&1
-    fi
-
+    echo "$NOW:  Submitting packets from $OUTPUT_DIR/data-sorted.txt" >> $LOGFILE
+    $CMD_SUBMIT $OUTPUT_DIR/data-sorted.txt > $OUTPUT_DIR/submit.log  2>&1
 
     NOW="$(date --utc +%Y%m%d_%H%M%S)"
     echo "$NOW:" >> $LOGFILE
